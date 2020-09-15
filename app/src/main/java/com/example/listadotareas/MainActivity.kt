@@ -5,21 +5,27 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.*
+import java.lang.Math.E
 import java.util.*
 import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var adapter: ArrayAdapter<String>
+    val arrayListTask = arrayListOf<String>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        adapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayListTask)
         readFile()
+        deleteItemList()
     }
-
 
     fun addTask( v: View){
         if(task.text.isNotEmpty()){
@@ -38,7 +44,6 @@ class MainActivity : AppCompatActivity() {
 
         val f = File(filesDir, "task.txt")
         if(f.exists()){
-            val arrayListTask = arrayListOf<String>()
             //Read the file
             val input = Scanner(openFileInput("task.txt"))
             while(input.hasNextLine()){
@@ -46,6 +51,7 @@ class MainActivity : AppCompatActivity() {
                 arrayListTask.add(i)
             }
             createList(arrayListTask)
+
         }else{
             f.createNewFile()
             readFile()
@@ -54,8 +60,35 @@ class MainActivity : AppCompatActivity() {
 
     fun createList(arrayListTask : ArrayList<String>){
         // Create the list
-        val adapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayListTask)
+        adapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayListTask)
         listTask.adapter = adapter
+
+    }
+
+    fun deleteItemList(){
+
+        listTask.setOnItemClickListener { parent, view, position, id ->
+            Toast.makeText(this, "Position Clicked:"+" "+position,Toast.LENGTH_SHORT).show()
+            arrayListTask.removeAt(position)
+            adapter.notifyDataSetChanged()
+
+            val f = File(filesDir, "task.txt")
+
+            if(f.exists()){
+                //Read the file
+                val input = Scanner(openFileInput("task.txt"))
+                while(input.hasNextLine()){
+                    val i = input.nextLine()
+                    arrayListTask.add(i)
+                }
+                createList(arrayListTask)
+
+            }else{
+                f.createNewFile()
+                readFile()
+            }
+
+        }
     }
 
 
